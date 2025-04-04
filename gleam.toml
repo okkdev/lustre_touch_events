@@ -1,5 +1,5 @@
 name = "lustre_touch_events"
-version = "1.0.0"
+version = "1.1.0"
 target = "javascript"
 
 description = "👇 Lustre bindings for the TouchEvent Web API"

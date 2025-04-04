@@ -5,7 +5,7 @@ import gleam/result
 import lustre/attribute.{type Attribute}
 
 /// Touch type corresponding to:
-/// https://developer.mozilla.org/en-US/docs/Web/API/Touch
+/// [https://developer.mozilla.org/en-US/docs/Web/API/Touch](https://developer.mozilla.org/en-US/docs/Web/API/Touch)
 pub type Touch {
   Touch(
     identifier: Int,
@@ -15,42 +15,50 @@ pub type Touch {
     client_y: Float,
     page_x: Float,
     page_y: Float,
+    radius_x: Float,
+    radius_y: Float,
+    rotation_angle: Float,
+    force: Float,
   )
 }
 
-/// Touch event containing the touch lists.
+/// Touch event corresponding to:
+/// [https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent)
 pub type TouchEvent {
   TouchEvent(
     changed_touches: List(Touch),
     target_touches: List(Touch),
     touches: List(Touch),
+    /// rotation isn't supported on all browsers and will default to: 0.0
+    rotation: Float,
+    /// scale isn't supported on all browsers and will default to: 1.0
+    scale: Float,
   )
 }
 
-/// This is needed to turn TouchList into a regular Array
 @external(javascript, "./lustre_touch_events.ffi.mjs", "normalize_touchevent")
 fn normalize_touchevent(touchevent: dynamic.Dynamic) -> dynamic.Dynamic
 
 /// `touchstart` event:
-/// https://developer.mozilla.org/en-US/docs/Web/API/Element/touchstart_event
+/// [https://developer.mozilla.org/en-US/docs/Web/API/Element/touchstart_event](https://developer.mozilla.org/en-US/docs/Web/API/Element/touchstart_event)
 pub fn on_touch_start(msg: fn(TouchEvent) -> a) -> Attribute(a) {
   on_touch_event("touchstart", msg)
 }
 
 /// `touchmove` event:
-/// https://developer.mozilla.org/en-US/docs/Web/API/Element/touchmove_event
+/// [https://developer.mozilla.org/en-US/docs/Web/API/Element/touchmove_event](https://developer.mozilla.org/en-US/docs/Web/API/Element/touchmove_event)
 pub fn on_touch_move(msg: fn(TouchEvent) -> a) -> Attribute(a) {
   on_touch_event("touchmove", msg)
 }
 
 /// `touchend` event:
-/// https://developer.mozilla.org/en-US/docs/Web/API/Element/touchend_event
+/// [https://developer.mozilla.org/en-US/docs/Web/API/Element/touchend_event](https://developer.mozilla.org/en-US/docs/Web/API/Element/touchend_event)
 pub fn on_touch_end(msg: fn(TouchEvent) -> a) -> Attribute(a) {
   on_touch_event("touchend", msg)
 }
 
 /// `touchcancel` event:
-/// https://developer.mozilla.org/en-US/docs/Web/API/Element/touchcancel_event
+/// [https://developer.mozilla.org/en-US/docs/Web/API/Element/touchcancel_event](https://developer.mozilla.org/en-US/docs/Web/API/Element/touchcancel_event)
 pub fn on_touch_cancel(msg: fn(TouchEvent) -> a) -> Attribute(a) {
   on_touch_event("touchcancel", msg)
 }
@@ -75,7 +83,16 @@ fn touch_event_decoder() -> decode.Decoder(TouchEvent) {
     decode.list(touch_decoder()),
   )
   use touches <- decode.field("touches", decode.list(touch_decoder()))
-  decode.success(TouchEvent(changed_touches:, target_touches:, touches:))
+  use rotation <- decode.optional_field("rotation", 0.0, decode.float)
+  use scale <- decode.optional_field("scale", 1.0, decode.float)
+
+  decode.success(TouchEvent(
+    changed_touches:,
+    target_touches:,
+    touches:,
+    rotation:,
+    scale:,
+  ))
 }
 
 fn touch_decoder() -> decode.Decoder(Touch) {
@@ -86,6 +103,11 @@ fn touch_decoder() -> decode.Decoder(Touch) {
   use client_y <- decode.field("clientY", decode.float)
   use page_x <- decode.field("pageX", decode.float)
   use page_y <- decode.field("pageY", decode.float)
+  use radius_x <- decode.field("radiusX", decode.float)
+  use radius_y <- decode.field("radiusY", decode.float)
+  use rotation_angle <- decode.field("rotationAngle", decode.float)
+  use force <- decode.field("force", decode.float)
+
   decode.success(Touch(
     identifier:,
     screen_x:,
@@ -94,6 +116,10 @@ fn touch_decoder() -> decode.Decoder(Touch) {
     client_y:,
     page_x:,
     page_y:,
+    radius_x:,
+    radius_y:,
+    rotation_angle:,
+    force:,
   ))
 }
 
