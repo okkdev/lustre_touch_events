@@ -4,14 +4,7 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/lustre_touch_events/)
 
 ```sh
-gleam add lustre_touch_events@1
+gleam add lustre_touch_events@2
 ```
 
-Further documentation can be found at <https://hexdocs.pm/lustre_touch_events>.
-
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
-```
+Lustre events for the [Touch Web API](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent).
