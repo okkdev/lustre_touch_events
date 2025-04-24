@@ -1,5 +1,5 @@
 name = "lustre_touch_events"
-version = "1.1.0"
+version = "2.0.0"
 target = "javascript"
 
 description = "👇 Lustre bindings for the TouchEvent Web API"
@@ -13,7 +13,7 @@ repository = { type = "github", user = "okkdev", repo = "lustre_touch_events" }
 
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
-lustre = ">= 4.6.4 and < 5.0.0"
+lustre = ">= 5.0.1 and < 6.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

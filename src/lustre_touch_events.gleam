@@ -1,8 +1,7 @@
 import gleam/dynamic
 import gleam/dynamic/decode
-import gleam/list
-import gleam/result
 import lustre/attribute.{type Attribute}
+import lustre/event
 
 /// Touch type corresponding to:
 /// [https://developer.mozilla.org/en-US/docs/Web/API/Touch](https://developer.mozilla.org/en-US/docs/Web/API/Touch)
@@ -65,12 +64,26 @@ pub fn on_touch_cancel(msg: fn(TouchEvent) -> a) -> Attribute(a) {
 
 /// generic touch event helper
 fn on_touch_event(event: String, msg: fn(TouchEvent) -> a) -> Attribute(a) {
-  attribute.on(event, fn(x) {
-    normalize_touchevent(x)
-    |> decode.run(touch_event_decoder())
-    |> result.map(msg)
-    |> result.map_error(to_dynamic_errors)
-  })
+  event.on(
+    event,
+    decode.then(decode.dynamic, fn(te) {
+      let te = normalize_touchevent(te)
+      case decode.run(te, touch_event_decoder()) {
+        Ok(x) -> decode.success(msg(x))
+        Error(_) ->
+          decode.failure(
+            msg(TouchEvent(
+              changed_touches: [],
+              target_touches: [],
+              touches: [],
+              rotation: 0.0,
+              scale: 1.0,
+            )),
+            "TouchEvent",
+          )
+      }
+    }),
+  )
 }
 
 fn touch_event_decoder() -> decode.Decoder(TouchEvent) {
@@ -121,14 +134,4 @@ fn touch_decoder() -> decode.Decoder(Touch) {
     rotation_angle:,
     force:,
   ))
-}
-
-/// Maps DecodeErrors to deprecated dynamic DecodeErrors because
-/// Lustre still uses the old DecodeError type.
-fn to_dynamic_errors(
-  errors: List(decode.DecodeError),
-) -> List(dynamic.DecodeError) {
-  list.map(errors, fn(x: decode.DecodeError) {
-    dynamic.DecodeError(expected: x.expected, found: x.found, path: x.path)
-  })
 }
